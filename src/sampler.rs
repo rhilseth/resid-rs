@@ -232,8 +232,8 @@ impl Sampler {
     ///   and the required filter order is thus lower in this step.
     ///   Laurent Ganier has found the optimal intermediate sampling frequency
     ///   to be (via derivation of sum of two steps):
-    ///     2 * pass_freq + sqrt [ 2 * pass_freq * orig_sample_freq
-    ///       * (dest_sample_freq - 2 * pass_freq) / dest_sample_freq ]
+    ///   2 * pass_freq + sqrt [ 2 * pass_freq * orig_sample_freq
+    ///   * (dest_sample_freq - 2 * pass_freq) / dest_sample_freq ]
     ///
     /// NB! the result of right shifting negative numbers is really
     /// implementation dependent in the C++ standard.
@@ -409,6 +409,10 @@ impl Sampler {
         self.compute_convolution_fir_fallback(sample, fir)
     }
 
+    /// Compute convolution using AVX2 SIMD instructions.
+    ///
+    /// # Safety
+    /// Caller must ensure the CPU supports AVX2 instructions.
     #[target_feature(enable = "avx2")]
     #[cfg(all(feature = "std", any(target_arch = "x86", target_arch = "x86_64")))]
     pub unsafe fn compute_convolution_fir_avx2(&self, sample: &[i16], fir: &[i16]) -> i32 {
@@ -459,6 +463,10 @@ impl Sampler {
 
     #[target_feature(enable = "sse4.2")]
     #[cfg(all(feature = "std", any(target_arch = "x86", target_arch = "x86_64")))]
+    /// Compute convolution using SSE4.2 SIMD instructions.
+    ///
+    /// # Safety
+    /// Caller must ensure the CPU supports SSE4.2 instructions.
     pub unsafe fn compute_convolution_fir_sse(&self, sample: &[i16], fir: &[i16]) -> i32 {
         #[cfg(target_arch = "x86")]
         use alloc::arch::x86::*;
