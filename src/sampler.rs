@@ -182,8 +182,12 @@ impl Sampler {
             }
             delta -= delta_sample;
             let sample_now = self.synth.output();
-            buffer[index * interleave] = self.prev_sample
-                + ((self.offset.wrapping_mul((sample_now - self.prev_sample) as i32)) >> FIXP_SHIFT) as i16;
+            buffer[index * interleave] = self.prev_sample.wrapping_add(
+                ((self
+                    .offset
+                    .wrapping_mul(sample_now as i32 - self.prev_sample as i32))
+                    >> FIXP_SHIFT) as i16,
+            );
             index += 1;
             self.prev_sample = sample_now;
             self.update_sample_offset(next_sample_offset);
