@@ -3,8 +3,8 @@
 // Portions (c) 2004 Dag Lem <resid@nimrod.no>
 // Licensed under the GPLv3. See LICENSE file in the project root for full license text.
 
-#![cfg_attr(clippy, allow(clippy::cast_lossless))]
-#![cfg_attr(clippy, allow(clippy::cast_ptr_alignment))]
+#![allow(clippy::cast_lossless)]
+#![allow(clippy::cast_ptr_alignment)]
 
 use core::f64;
 
@@ -149,7 +149,7 @@ impl Sampler {
             }
             self.synth.clock_delta(delta_sample);
             delta -= delta_sample;
-            buffer[(index * interleave) as usize] = self.synth.output();
+            buffer[index * interleave] = self.synth.output();
             index += 1;
             self.update_sample_offset(next_sample_offset);
         }
@@ -427,13 +427,13 @@ impl Sampler {
         let mut v4 = _mm256_set1_epi32(0);
         while fs.len() >= 64 {
             let sv1 = _mm256_loadu_si256(ss.as_ptr() as *const _);
-            let sv2 = _mm256_loadu_si256((&ss[16..]).as_ptr() as *const _);
-            let sv3 = _mm256_loadu_si256((&ss[32..]).as_ptr() as *const _);
-            let sv4 = _mm256_loadu_si256((&ss[48..]).as_ptr() as *const _);
+            let sv2 = _mm256_loadu_si256(ss[16..].as_ptr() as *const _);
+            let sv3 = _mm256_loadu_si256(ss[32..].as_ptr() as *const _);
+            let sv4 = _mm256_loadu_si256(ss[48..].as_ptr() as *const _);
             let fv1 = _mm256_loadu_si256(fs.as_ptr() as *const _);
-            let fv2 = _mm256_loadu_si256((&fs[16..]).as_ptr() as *const _);
-            let fv3 = _mm256_loadu_si256((&fs[32..]).as_ptr() as *const _);
-            let fv4 = _mm256_loadu_si256((&fs[48..]).as_ptr() as *const _);
+            let fv2 = _mm256_loadu_si256(fs[16..].as_ptr() as *const _);
+            let fv3 = _mm256_loadu_si256(fs[32..].as_ptr() as *const _);
+            let fv4 = _mm256_loadu_si256(fs[48..].as_ptr() as *const _);
             let prod1 = _mm256_madd_epi16(sv1, fv1);
             let prod2 = _mm256_madd_epi16(sv2, fv2);
             let prod3 = _mm256_madd_epi16(sv3, fv3);
@@ -475,13 +475,13 @@ impl Sampler {
         let mut v4 = _mm_set1_epi32(0);
         while fs.len() >= 32 {
             let sv1 = _mm_loadu_si128(ss.as_ptr() as *const _);
-            let sv2 = _mm_loadu_si128((&ss[8..]).as_ptr() as *const _);
-            let sv3 = _mm_loadu_si128((&ss[16..]).as_ptr() as *const _);
-            let sv4 = _mm_loadu_si128((&ss[24..]).as_ptr() as *const _);
+            let sv2 = _mm_loadu_si128(ss[8..].as_ptr() as *const _);
+            let sv3 = _mm_loadu_si128(ss[16..].as_ptr() as *const _);
+            let sv4 = _mm_loadu_si128(ss[24..].as_ptr() as *const _);
             let fv1 = _mm_loadu_si128(fs.as_ptr() as *const _);
-            let fv2 = _mm_loadu_si128((&fs[8..]).as_ptr() as *const _);
-            let fv3 = _mm_loadu_si128((&fs[16..]).as_ptr() as *const _);
-            let fv4 = _mm_loadu_si128((&fs[24..]).as_ptr() as *const _);
+            let fv2 = _mm_loadu_si128(fs[8..].as_ptr() as *const _);
+            let fv3 = _mm_loadu_si128(fs[16..].as_ptr() as *const _);
+            let fv4 = _mm_loadu_si128(fs[24..].as_ptr() as *const _);
             let prod1 = _mm_madd_epi16(sv1, fv1);
             let prod2 = _mm_madd_epi16(sv2, fv2);
             let prod3 = _mm_madd_epi16(sv3, fv3);
