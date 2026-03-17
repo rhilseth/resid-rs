@@ -183,7 +183,7 @@ impl Sampler {
             delta -= delta_sample;
             let sample_now = self.synth.output();
             buffer[index * interleave] = self.prev_sample
-                + ((self.offset * (sample_now - self.prev_sample) as i32) >> FIXP_SHIFT) as i16;
+                + ((self.offset.wrapping_mul((sample_now - self.prev_sample) as i32)) >> FIXP_SHIFT) as i16;
             index += 1;
             self.prev_sample = sample_now;
             self.update_sample_offset(next_sample_offset);
@@ -261,8 +261,8 @@ impl Sampler {
             delta -= delta_sample;
             self.update_sample_offset2(next_sample_offset);
 
-            let fir_offset_1 = (self.offset * self.fir.res) >> FIXP_SHIFT;
-            let fir_offset_rmd = (self.offset * self.fir.res) & FIXP_MASK;
+            let fir_offset_1 = (self.offset.wrapping_mul(self.fir.res)) >> FIXP_SHIFT;
+            let fir_offset_rmd = (self.offset.wrapping_mul(self.fir.res)) & FIXP_MASK;
             let fir_start_1 = (fir_offset_1 * self.fir.n) as usize;
             let fir_end_1 = fir_start_1 + self.fir.n as usize;
             let sample_start_1 = (self.index as i32 - self.fir.n + RING_SIZE as i32) as usize;
@@ -294,7 +294,7 @@ impl Sampler {
             // Linear interpolation.
             // fir_offset_rmd is equal for all samples, it can thus be factorized out:
             // sum(v1 + rmd*(v2 - v1)) = sum(v1) + rmd*(sum(v2) - sum(v1))
-            let mut v = v1 + ((fir_offset_rmd * (v2 - v1)) >> FIXP_SHIFT);
+            let mut v = v1 + ((fir_offset_rmd.wrapping_mul(v2 - v1)) >> FIXP_SHIFT);
             v >>= FIR_SHIFT;
 
             // Saturated arithmetics to guard against 16 bit sample overflow.
@@ -352,7 +352,7 @@ impl Sampler {
             delta -= delta_sample;
             self.update_sample_offset2(next_sample_offset);
 
-            let fir_offset = (self.offset * self.fir.res) >> FIXP_SHIFT;
+            let fir_offset = (self.offset.wrapping_mul(self.fir.res)) >> FIXP_SHIFT;
             let fir_start = (fir_offset * self.fir.n) as usize;
             let fir_end = fir_start + self.fir.n as usize;
             let sample_start = (self.index as i32 - self.fir.n + RING_SIZE as i32) as usize;
