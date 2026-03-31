@@ -10,6 +10,10 @@ use core::f64;
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
+#[cfg(feature = "alloc")]
+use alloc::vec;
 
 #[cfg(not(feature = "std"))]
 use libm::F64Ext;
@@ -64,6 +68,11 @@ pub struct Sampler {
     #[cfg(all(feature = "std", any(target_arch = "x86", target_arch = "x86_64")))]
     use_avx2: bool,
     // Runtime State
+    // When the `alloc` feature is enabled, this 64 KB array is heap-allocated
+    // to avoid overflowing small stack frames (e.g. on embedded targets).
+    #[cfg(feature = "alloc")]
+    buffer: Box<[i16]>,
+    #[cfg(not(feature = "alloc"))]
     buffer: [i16; RING_SIZE * 2],
     index: usize,
     offset: i32,
@@ -86,6 +95,9 @@ impl Sampler {
             use_avx2: alloc::is_x86_feature_detected!("avx2"),
             #[cfg(all(feature = "std", any(target_arch = "x86", target_arch = "x86_64")))]
             use_sse42: alloc::is_x86_feature_detected!("sse4.2"),
+            #[cfg(feature = "alloc")]
+            buffer: vec![0i16; RING_SIZE * 2].into_boxed_slice(),
+            #[cfg(not(feature = "alloc"))]
             buffer: [0; RING_SIZE * 2],
             index: 0,
             offset: 0,
